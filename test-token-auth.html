@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zego Token Authentication Test</title>
+</head>
+<body>
+    <h1>🔧 Zego Token Authentication Debug</h1>
+    
+    <h2>📋 Test URLs:</h2>
+    <p>Click these links to test with proper parameters:</p>
+    
+    <ul>
+        <li><a href="http://localhost:3000/?room_id=TEST123&username=Patient1&userid=PAT001&doctor_name=Dr.Smith" target="_blank">
+            Test Room 1 (Patient1)
+        </a></li>
+        
+        <li><a href="http://localhost:3000/?room_id=TEST123&username=Doctor1&userid=DOC001&doctor_name=Dr.Smith" target="_blank">
+            Test Room 1 (Doctor1) - Same room, different user
+        </a></li>
+        
+        <li><a href="http://localhost:3000/?room_id=ROOM456&username=Patient2&userid=PAT002&doctor_name=Dr.Kumar" target="_blank">
+            Test Room 2 (Patient2)
+        </a></li>
+    </ul>
+    
+    <h2>🔍 Debug Steps:</h2>
+    <ol>
+        <li><strong>Click one of the test links above</strong></li>
+        <li><strong>Open Browser Developer Tools</strong> (F12)</li>
+        <li><strong>Go to Console tab</strong></li>
+        <li><strong>Look for these debug messages:</strong>
+            <ul>
+                <li>"Zego Token Generation Parameters"</li>
+                <li>"Generated Token: Success/Failed"</li>
+                <li>Any error messages</li>
+            </ul>
+        </li>
+        <li><strong>Try to join the consultation</strong></li>
+        <li><strong>Check console for any errors</strong></li>
+    </ol>
+    
+    <h2>❌ Common Issues:</h2>
+    <ul>
+        <li><strong>Missing URL parameters:</strong> Make sure URL has room_id, username, userid</li>
+        <li><strong>Invalid credentials:</strong> App ID or Server Secret might be wrong</li>
+        <li><strong>Network issues:</strong> Check internet connection</li>
+        <li><strong>Browser permissions:</strong> Allow camera and microphone access</li>
+    </ul>
+    
+    <h2>✅ Expected Behavior:</h2>
+    <ol>
+        <li>Page loads with Kauvery Hospital branding</li>
+        <li>Shows "Mic Ready" and "Camera Ready" status</li>
+        <li>Click "Join Video Consultation" button</li>
+        <li>Should load Zego video interface (not show token error)</li>
+    </ol>
+    
+    <hr>
+    <p><em>📝 Note: If you still get token authentication errors, check the console logs and verify your Zego credentials in VideoConsultation.js</em></p>
+</body>
+</html> 

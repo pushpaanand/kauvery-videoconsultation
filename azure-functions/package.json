@@ -1,0 +1,29 @@
+{
+  "name": "video-consultation-backend",
+  "version": "1.0.0",
+  "description": "Azure Functions backend for video consultation scheduler",
+  "main": "index.js",
+  "scripts": {
+    "start": "func start",
+    "build": "func build",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@azure/functions": "^4.0.0",
+    "axios": "^1.6.0",
+    "node-cron": "^3.0.3",
+    "uuid": "^9.0.1",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "@azure/functions-core-tools": "^4.0.0"
+  },
+  "keywords": [
+    "azure-functions",
+    "video-consultation",
+    "scheduler",
+    "hms"
+  ],
+  "author": "Kauvery Hospital",
+  "license": "MIT"
+} 

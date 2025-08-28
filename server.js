@@ -34,14 +34,7 @@ app.use(cors(corsOptions));
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static(path.join(__dirname, "./client/build")));
 
-// Request logging middleware
-app.use((req, res, next) => {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
-  next();
-});
 
 // Configuration
 const config = {
@@ -203,10 +196,18 @@ if (NODE_ENV === 'development') {
   });
 }
 
+app.use(express.static(path.join(__dirname, "./client/build")));
+
+
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "client","build", "index.html"));
 });
-
+// Request logging middleware
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
+  next();
+});
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

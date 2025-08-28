@@ -1,0 +1,18 @@
+{
+  "files": {
+    "main.css": "/video-consultation/static/css/main.eb642268.css",
+    "main.js": "/video-consultation/static/js/main.c2fafb50.js",
+    "static/js/987.e37e06bd.chunk.js": "/video-consultation/static/js/987.e37e06bd.chunk.js",
+    "static/js/453.b51cfb61.chunk.js": "/video-consultation/static/js/453.b51cfb61.chunk.js",
+    "static/media/25YearsLogo.png": "/video-consultation/static/media/25YearsLogo.7df80b549422ba400e36.png",
+    "index.html": "/video-consultation/index.html",
+    "main.eb642268.css.map": "/video-consultation/static/css/main.eb642268.css.map",
+    "main.c2fafb50.js.map": "/video-consultation/static/js/main.c2fafb50.js.map",
+    "987.e37e06bd.chunk.js.map": "/video-consultation/static/js/987.e37e06bd.chunk.js.map",
+    "453.b51cfb61.chunk.js.map": "/video-consultation/static/js/453.b51cfb61.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.eb642268.css",
+    "static/js/main.c2fafb50.js"
+  ]
+}

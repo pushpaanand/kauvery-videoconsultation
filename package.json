@@ -1,44 +1,58 @@
 {
-  "name": "video-consultation",
-  "version": "0.1.0",
+  "name": "kauvery-video-consultation-platform",
+  "version": "1.0.0",
+  "description": "Complete video consultation platform for Kauvery Hospital with client and server",
   "private": true,
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/material": "^7.3.1",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.6.4",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@zegocloud/zego-uikit-prebuilt": "^2.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.8.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+  "main": "server/server.js",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "install:all": "npm install && cd client && npm install",
+    "client:start": "cd client && npm start",
+    "client:build": "cd client && npm run build",
+    "client:test": "cd client && npm test",
+    "server:start": "cd server && node server.js",
+    "server:dev": "cd server && NODE_ENV=development node server.js",
+    "server:prod": "cd server && NODE_ENV=production node server.js",
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:start\"",
+    "dev:server": "cd server && nodemon server.js",
+    "build": "npm run client:build",
+    "start:prod": "npm run build && npm run server:prod",
+    "lint": "cd client && npm run lint",
+    "lint:fix": "cd client && npm run lint:fix",
+    "security-check": "npm audit && cd client && npm audit",
+    "security-fix": "npm audit fix && cd client && npm audit fix",
+    "clean": "rm -rf node_modules client/node_modules client/build",
+    "clean:install": "npm run clean && npm run install:all"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.2"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
-}
+  "keywords": [
+    "video-consultation",
+    "telemedicine",
+    "healthcare",
+    "zego",
+    "react",
+    "express",
+    "security",
+    "fullstack"
+  ],
+  "author": "Kauvery Hospital",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kauvery-hospital/video-consultation.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kauvery-hospital/video-consultation/issues"
+  },
+  "homepage": "https://kauveryhospital.com/video-consultation",
+  "workspaces": [
+    "client",
+    "server"
+  ]
+} 

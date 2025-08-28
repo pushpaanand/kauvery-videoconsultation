@@ -1,243 +1,222 @@
-# Kauvery Tele Consultation - Video Consultation App
+# Kauvery Hospital Video Consultation Platform
 
-A React-based video consultation application with Zego integration for healthcare telemedicine services.
+A secure, full-stack video consultation platform built with React and Express.js, featuring ZegoCloud video integration and comprehensive security measures.
 
-## Features
+## 📁 Project Structure
 
-- **Video Consultation**: Real-time video calling using Zego Cloud SDK
-- **Appointment Management**: API integration for appointment data
-- **Automatic Updates**: Scheduler for periodic appointment updates
-- **Responsive Design**: Mobile-friendly interface
-- **Professional Branding**: Kauvery Hospital branded interface
+```
+video-consultation/
+├── client/                 # React frontend application
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── VideoConsultation.js    # Main video interface
+│   │   │   ├── VideoConsultation.css   # Video component styles
+│   │   │   └── VideoCallManager.js     # Video call management
+│   │   ├── assets/                     # Images and static files
+│   │   ├── utils/                      # Utility functions
+│   │   ├── App.js                      # Main React app component
+│   │   └── index.js                    # React entry point
+│   ├── public/                         # Public assets
+│   └── package.json                    # Client dependencies
+├── server/                 # Express.js backend server
+│   └── server.js                       # Main server file
+├── build/                  # Production build output
+├── package.json            # Root package.json (manages both client & server)
+└── README.md              # This file
+```
 
-## Prerequisites
+## 🚀 Quick Start
 
-- Node.js (v14 or higher)
-- npm or yarn
-- Zego Cloud account and credentials
-- API endpoint for appointment data
+### Prerequisites
+- Node.js >= 16.0.0
+- npm >= 8.0.0
 
-## Installation
+### Installation
 
-1. **Clone the repository**
+1. **Install all dependencies:**
    ```bash
-   git clone <repository-url>
-   cd video-consultation
+   npm run install:all
    ```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Configuration**
-   Create a `.env` file in the root directory:
+2. **Set up environment variables:**
+   
+   Create `.env` files in both `client/` and `server/` directories:
+   
+   **client/.env:**
    ```env
-   # API Configuration
-   REACT_APP_API_BASE_URL=https://your-api-endpoint.com
-   REACT_APP_API_TOKEN=your_api_token_here
-
-   # Zego Configuration
-   REACT_APP_ZEGO_APP_ID=167959465
-   REACT_APP_ZEGO_SERVER_SECRET=1c7c018987d37f50cf8adbbfe9909415
-
-   # App Configuration
-   REACT_APP_UPDATE_INTERVAL=30000
-   REACT_APP_DEFAULT_ROOM_ID=default-room
+   REACT_APP_ZEGO_APP_ID=your_zego_app_id
+   REACT_APP_ZEGO_SERVER_SECRET=your_zego_server_secret
+   REACT_APP_DECRYPTION_API_URL=https://hmsapiktv.kauverykonnect.com/Encryfile/api/values/decrypt
+   REACT_APP_DECRYPTION_KEY=your_decryption_key
+   REACT_APP_SERVER_URL=http://localhost:3001
+   ```
+   
+   **server/.env:**
+   ```env
+   PORT=3001
+   NODE_ENV=development
+   DECRYPTION_KEY=your_decryption_key
+   DECRYPTION_API_URL=https://hmsapiktv.kauverykonnect.com/Encryfile/api/values/decrypt
    ```
 
-4. **Start the development server**
-   ```bash
-   npm start
-   ```
+### Running the Application
 
-## Usage
-
-### URL Parameters
-
-The app accepts the following URL parameters:
-
-- `app_no` or `roomID`: Appointment number or room ID
-- `userid`: User ID (optional, auto-generated if not provided)
-- `username`: Patient name (optional, defaults to "Patient Name")
-
-### Example URLs
-
-```
-# Basic consultation
-http://localhost:3000/consultation
-
-# With appointment data
-http://localhost:3000/consultation?app_no=APP123&username=John%20Doe&userid=USER456
-
-# Direct video call
-http://localhost:3000/video?roomID=ROOM789&username=Jane%20Smith
-```
-
-### API Integration
-
-The app expects the following API endpoints:
-
-#### Get Appointment
-```
-GET /appointments/{appointmentId}
-```
-
-Response:
-```json
-{
-  "appointment_number": "APP123",
-  "user_id": "USER456",
-  "patient_name": "John Doe",
-  "doctor_name": "Dr. Smith",
-  "appointment_time": "2024-01-15T10:00:00Z",
-  "status": "active",
-  "room_id": "ROOM789"
-}
-```
-
-#### Get Active Appointments
-```
-GET /appointments/active
-```
-
-Response:
-```json
-{
-  "appointments": [
-    {
-      "appointment_number": "APP123",
-      "user_id": "USER456",
-      "patient_name": "John Doe",
-      "status": "active"
-    }
-  ]
-}
-```
-
-#### Update Appointment Status
-```
-PUT /appointments/{appointmentId}/status
-```
-
-Request:
-```json
-{
-  "status": "completed"
-}
-```
-
-## Project Structure
-
-```
-src/
-├── components/
-│   ├── VideoConsultation.js    # Main video consultation component
-│   └── VideoConsultation.css   # Component styles
-├── services/
-│   └── appointmentService.js   # API service and scheduler
-├── App.js                      # Main app with routing
-└── index.js                    # App entry point
-```
-
-## Configuration
-
-### Zego Cloud Setup
-
-1. Create a Zego Cloud account at [https://www.zegocloud.com/](https://www.zegocloud.com/)
-2. Create a new project
-3. Get your App ID and Server Secret
-4. Update the environment variables with your credentials
-
-### API Configuration
-
-1. Set up your appointment API endpoints
-2. Configure authentication (Bearer token)
-3. Update the `REACT_APP_API_BASE_URL` in your `.env` file
-
-## Features
-
-### Video Controls
-- **Microphone**: Mute/unmute audio
-- **Camera**: Turn video on/off
-- **Screen Share**: Share screen content
-- **End Call**: Terminate the consultation
-- **Participants**: View participant count
-- **Chat**: Text messaging (if enabled)
-
-### Appointment Management
-- **Automatic Updates**: Fetches appointment data every 30 seconds
-- **Real-time Status**: Updates appointment status
-- **Fallback Handling**: Graceful degradation if API is unavailable
-
-### Responsive Design
-- **Mobile Optimized**: Works on all device sizes
-- **Touch Friendly**: Optimized for touch interfaces
-- **Professional UI**: Healthcare-focused design
-
-## Deployment
-
-### Build for Production
+#### Development Mode (Both Client & Server)
 ```bash
-npm run build
+npm run dev
+```
+This starts:
+- React development server on **port 3000**
+- Express API server on **port 3001**
+
+#### Client Only
+```bash
+npm run client:start
 ```
 
-### Environment Variables for Production
-Make sure to set the correct environment variables for your production environment:
-
-```env
-REACT_APP_API_BASE_URL=https://your-production-api.com
-REACT_APP_API_TOKEN=your_production_token
-REACT_APP_ZEGO_APP_ID=your_zego_app_id
-REACT_APP_ZEGO_SERVER_SECRET=your_zego_server_secret
+#### Server Only
+```bash
+npm run server:start
 ```
 
-### Deployment Platforms
-- **Netlify**: Drag and drop the `build` folder
-- **Vercel**: Connect your GitHub repository
-- **AWS S3**: Upload the `build` folder to an S3 bucket
-- **Heroku**: Deploy using the Heroku CLI
+#### Production Mode
+```bash
+npm run start:prod
+```
 
-## Troubleshooting
+## 📋 Available Scripts
+
+### Root Level Commands
+- `npm run install:all` - Install dependencies for both client and server
+- `npm run dev` - Start both client and server in development mode
+- `npm run build` - Build the React application for production
+- `npm run start:prod` - Build and start in production mode
+- `npm run security-check` - Run security audit on both client and server
+- `npm run clean:install` - Clean and reinstall all dependencies
+
+### Client Commands
+- `npm run client:start` - Start React development server
+- `npm run client:build` - Build React app for production
+- `npm run client:test` - Run React tests
+
+### Server Commands
+- `npm run server:start` - Start Express server
+- `npm run server:dev` - Start Express server in development mode
+- `npm run server:prod` - Start Express server in production mode
+- `npm run dev:server` - Start Express server with auto-restart (nodemon)
+
+## 🔧 Configuration
+
+### Environment Variables
+
+#### Client (.env)
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `REACT_APP_ZEGO_APP_ID` | ZegoCloud application ID | Yes |
+| `REACT_APP_ZEGO_SERVER_SECRET` | ZegoCloud server secret | Yes |
+| `REACT_APP_DECRYPTION_API_URL` | External decryption API URL | Yes |
+| `REACT_APP_DECRYPTION_KEY` | AES decryption key | Yes |
+| `REACT_APP_SERVER_URL` | Express server URL | Yes |
+
+#### Server (.env)
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | 3001 |
+| `NODE_ENV` | Environment (development/production) | development |
+| `DECRYPTION_KEY` | AES decryption key | Required |
+| `DECRYPTION_API_URL` | External decryption API URL | Required |
+
+## 🔒 Security Features
+
+### Server Security
+- **CORS Protection**: Dynamic origin validation
+- **Rate Limiting**: 100 requests per 15 minutes
+- **Security Headers**: Via Helmet.js
+- **Input Validation**: Comprehensive parameter validation
+- **AES Encryption**: Configurable key lengths (16, 24, 32 bytes)
+- **Error Handling**: Comprehensive error management
+
+### Client Security
+- **Environment Validation**: Startup validation of required variables
+- **Parameter Validation**: URL parameter validation and decryption
+- **Access Control**: Token-based access control
+- **Error Boundaries**: React error boundaries for DOM conflicts
+
+## 🎨 Features
+
+### Video Consultation Interface
+- **ZegoCloud Integration**: Professional video/audio streaming
+- **Custom UI**: Branded pre-join and call-ended interfaces
+- **Real-time Status**: Participant monitoring and status updates
+- **Responsive Design**: Optimized for desktop, laptop, tablet, and mobile
+- **DOM Safety**: Error boundaries and safe DOM manipulation
+
+### User Experience
+- **Access Control**: Secure parameter-based access
+- **Error Handling**: Graceful error handling and user feedback
+- **Loading States**: Professional loading and status indicators
+- **Branding**: Kauvery Hospital branding throughout
+
+## 🚨 Troubleshooting
 
 ### Common Issues
 
-1. **Zego SDK not loading**
-   - Check your App ID and Server Secret
-   - Ensure you have a stable internet connection
-   - Check browser console for errors
+1. **Port 3000 already in use:**
+   ```bash
+   # Kill process on port 3000
+   npx kill-port 3000
+   ```
 
-2. **API connection issues**
-   - Verify your API endpoint is accessible
-   - Check authentication token
-   - Review network tab for failed requests
+2. **Port 3001 already in use:**
+   ```bash
+   # Kill process on port 3001
+   npx kill-port 3001
+   ```
 
-3. **Video not working**
-   - Allow camera and microphone permissions
-   - Check browser compatibility
-   - Ensure HTTPS is used in production
+3. **Environment variables not loading:**
+   - Ensure `.env` files are in the correct directories
+   - Restart the development server after adding new variables
 
-### Browser Support
-- Chrome (recommended)
-- Firefox
-- Safari
-- Edge
+4. **ZegoCloud connection issues:**
+   - Verify `REACT_APP_ZEGO_APP_ID` and `REACT_APP_ZEGO_SERVER_SECRET`
+   - Check ZegoCloud dashboard for app status
 
-## Security Considerations
+### Development Tips
 
-- Use HTTPS in production
-- Implement proper authentication
-- Validate all API inputs
-- Secure your Zego credentials
-- Implement rate limiting on your API
+- Use `npm run dev:server` for server development with auto-restart
+- Check browser console and server logs for detailed error information
+- Use `npm run security-check` before deployment
 
-## Support
+## 📦 Deployment
 
-For technical support or questions:
-- Check the browser console for error messages
-- Review the Zego Cloud documentation
-- Contact your development team
+### Production Build
+```bash
+npm run build
+npm run start:prod
+```
 
-## License
+### Environment Setup
+1. Set `NODE_ENV=production`
+2. Configure production environment variables
+3. Set up proper CORS origins for production domain
+4. Configure SSL certificates for HTTPS
 
-This project is proprietary software for Kauvery Hospital.
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and security checks
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🏥 About Kauvery Hospital
+
+Kauvery Hospital is a leading healthcare provider committed to delivering exceptional patient care through innovative technology solutions.
+
+---
+
+**For support or questions, please contact the development team.** 

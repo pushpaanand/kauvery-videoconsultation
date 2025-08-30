@@ -43,8 +43,8 @@ function App() {
   // Function to decrypt encoded ID parameter by calling Express server
   const decryptParameter = async (encodedText) => {
     try {
-      // const serverUrl = 'http://localhost:3001';
-      const serverUrl='https://videoconsultation-fsb6dbejh3c9htfn.canadacentral-01.azurewebsites.net';
+      const serverUrl = 'http://localhost:3001';
+      // const serverUrl='https://videoconsultation-fsb6dbejh3c9htfn.canadacentral-01.azurewebsites.net';
       const apiEndpoint = `${serverUrl}/api/decrypt`;
       
       console.log('🔐 App.js: Calling /api/decrypt with params.id:', encodedText);
@@ -131,10 +131,12 @@ function App() {
           userid: userid
         }));
         setToken(videoToken);
-        console.log('🔍 App.js: Encoded ID processed, setting token:', videoToken);
+        setIsTokenValid(true); // Set token as valid immediately after successful decryption
+        console.log('🔍 App.js: Encoded ID processed successfully, setting token:', videoToken);
         
       } catch (error) {
         console.error('❌ App.js: Failed to process encoded ID:', error);
+        setIsTokenValid(false);
       }
     };
 
@@ -149,6 +151,7 @@ function App() {
       const videoToken = `video_${params.app_no || params.userid}`;
       sessionStorage.setItem("authToken", videoToken);
       setToken(videoToken);
+      setIsTokenValid(true);
       console.log('🔍 App.js: Video consultation parameters detected, setting token:', videoToken);
     } 
     // Check for original token
@@ -156,15 +159,18 @@ function App() {
       console.log('🔍 App.js: Token parameter detected');
       sessionStorage.setItem("authToken", params.token);
       setToken(params.token);
+      setIsTokenValid(true);
     } 
     // Check for saved token
     else {
       const savedToken = sessionStorage.getItem("authToken");
       if (savedToken) {
         setToken(savedToken);
+        setIsTokenValid(true);
         console.log('🔍 App.js: Using saved token');
       } else {
         console.log('🔍 App.js: No valid parameters found');
+        setIsTokenValid(false);
       }
     }
 
@@ -177,7 +183,7 @@ function App() {
     }
   }, []);
 
-  // Validate URL parameters and token
+  // Validate URL parameters and token - Simplified validation
   useEffect(() => {
     const params = getQueryParams();
     
@@ -188,36 +194,9 @@ function App() {
       // No URL parameters at all - show Access Denied
       console.log('🔍 App.js: No URL parameters found - showing Access Denied');
       setIsTokenValid(false);
-      return;
     }
-    
-    // URL parameters exist, now validate the token
-    if (token) {
-      // Check if we have the required parameters for video consultation
-      const decryptedParams = sessionStorage.getItem("decryptedParams");
-      let hasRequiredParams = false;
-      
-      if (decryptedParams) {
-        try {
-          const params = JSON.parse(decryptedParams);
-          // Check if we have the minimum required parameters
-          hasRequiredParams = params.app_no && params.username && params.userid;
-          console.log('🔍 App.js: Decrypted params validation:', { params, hasRequiredParams });
-        } catch (error) {
-          console.error('❌ App.js: Error parsing decrypted params:', error);
-          hasRequiredParams = false;
-        }
-      }
-      
-      // Token is valid if it's a video token AND we have required parameters
-      const isValidToken = (token.startsWith('video_') && hasRequiredParams) || (token.length > 5 && !token.startsWith('video_'));
-      setIsTokenValid(isValidToken);
-      console.log('🔍 App.js: Token validation result:', { token, hasRequiredParams, isValidToken });
-    } else {
-      console.log('🔍 App.js: URL parameters exist but no token available');
-      setIsTokenValid(false);
-    }
-  }, [token]);
+    // Token validity is now set directly in the parameter processing functions
+  }, []);
 
   return (
     <BrowserRouter>

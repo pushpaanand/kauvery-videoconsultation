@@ -83,7 +83,7 @@ class VideoErrorBoundary extends Component {
 }
 
 // Isolated Zego Component to prevent DOM conflicts
-const ZegoVideoInterface = ({ containerRef, isInitialized, initializationError, appointmentData, onRetry }) => {
+const ZegoVideoInterface = ({ containerRef, isInitialized, initializationError, appointmentData, onRetry, showLeaveRoomPopup, onConfirmLeaveRoom, onCancelLeaveRoom }) => {
   // Use React.useMemo to prevent unnecessary re-renders that might cause DOM conflicts
         const containerStyle = React.useMemo(() => ({
         width: '100vw', // Full viewport width
@@ -135,6 +135,110 @@ const ZegoVideoInterface = ({ containerRef, isInitialized, initializationError, 
         Error: {initializationError ? '❌' : '✅'} | 
         Container: {containerRef.current ? '✅' : '❌'} */}
       {/* </div> */}
+
+
+
+      {/* Leave Room Popup - Inside video container */}
+      {showLeaveRoomPopup && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 999999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '400px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            border: '2px solid #EE2D67'
+          }}>
+            <h2 style={{
+              color: '#962067',
+              fontSize: '24px',
+              fontWeight: 700,
+              margin: '0 0 16px 0',
+              fontFamily: "'Poppins', sans-serif"
+            }}>
+              Leave the room
+            </h2>
+            
+            <p style={{
+              color: '#58595B',
+              fontSize: '16px',
+              lineHeight: 1.6,
+              margin: '0 0 24px 0'
+            }}>
+              Are you sure to leave the room?
+            </p>
+            
+            <div style={{
+              display: 'flex',
+              gap: '16px',
+              justifyContent: 'center'
+            }}>
+              <button 
+                onClick={onCancelLeaveRoom}
+                style={{
+                  background: '#eeeeee',
+                  color: '#58595B',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  minWidth: '100px'
+                }}
+              >
+                Cancel
+              </button>
+              
+              <button 
+                onClick={() => {
+                  console.log('🔴 Confirm button clicked!');
+                  alert('Confirm button clicked! Health packages page should appear now.');
+                  onConfirmLeaveRoom();
+                }}
+                style={{
+                  background: '#962067',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  minWidth: '100px',
+                  boxShadow: '0 4px 12px rgba(150, 32, 103, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#7a1a52';
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#962067';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Fallback content while Zego loads or error state */}
       {!isInitialized && (
@@ -259,9 +363,147 @@ const VideoConsultation = () => {
   const [callEnded, setCallEnded] = useState(false);
   const [isDecoding, setIsDecoding] = useState(false);
   const [decodingError, setDecodingError] = useState(null);
+  const [showLeaveRoomPopup, setShowLeaveRoomPopup] = useState(false);
+  const [showHealthPackages, setShowHealthPackages] = useState(false);
+
+  // Monitor health packages state changes
+  React.useEffect(() => {
+    console.log('🔍 Debug: showHealthPackages state changed to:', showHealthPackages);
+    if (showHealthPackages) {
+      console.log('🔍 Debug: Health packages should be visible now!');
+    }
+  }, [showHealthPackages]);
+
+  // Enhanced Zego override with confirm button focus
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      /* Force confirm button color in our popup */
+      button[onclick*="onConfirmLeaveRoom"], 
+      button[onclick*="handleConfirmLeaveRoom"],
+      button:contains("Confirm") {
+        background: #962067 !important;
+        background-color: #962067 !important;
+        color: #ffffff !important;
+        border: none !important;
+        outline: none !important;
+        text-decoration: none !important;
+        box-shadow: 0 4px 12px rgba(150, 32, 103, 0.3) !important;
+      }
+      
+      /* Hide Zego's end call popup */
+      [class*="popup"], [class*="modal"], [class*="dialog"], [class*="overlay"],
+      [class*="Popup"], [class*="Modal"], [class*="Dialog"], [class*="Overlay"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+      
+      /* Override any blue confirm buttons */
+      button[style*="blue"], button[style*="Blue"] {
+        background: #962067 !important;
+        background-color: #962067 !important;
+        color: #ffffff !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Function to intercept Zego end call button and show our popup
+    const interceptZegoEndCall = () => {
+      // Find any end call buttons
+      const endCallButtons = document.querySelectorAll('button, [class*="button"], [class*="btn"]');
+      endCallButtons.forEach(button => {
+        if (button.textContent && (
+          button.textContent.toLowerCase().includes('end call') ||
+          button.textContent.toLowerCase().includes('leave') ||
+          button.textContent.toLowerCase().includes('quit') ||
+          button.textContent.toLowerCase().includes('hang up')
+        )) {
+          console.log('🔴 Found Zego end call button, intercepting:', button.textContent);
+          
+          // Remove existing click handlers
+          button.replaceWith(button.cloneNode(true));
+          const newButton = document.querySelector(`[class*="${button.className}"]`);
+          
+          if (newButton) {
+            newButton.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              console.log('🔴 Zego end call intercepted, showing our popup');
+              handleEndCall();
+              return false;
+            }, true);
+          }
+        }
+      });
+    };
+
+    // Function to force confirm button color
+    const forceConfirmButtonColor = () => {
+      const confirmButtons = document.querySelectorAll('button');
+      confirmButtons.forEach(button => {
+        if (button.textContent && button.textContent.toLowerCase().includes('confirm')) {
+          console.log('🎨 Force setting confirm button color to #962067');
+          button.style.background = '#962067';
+          button.style.backgroundColor = '#962067';
+          button.style.color = '#ffffff';
+          button.style.border = 'none';
+          button.style.outline = 'none';
+        }
+      });
+    };
+
+    // Run interceptors
+    interceptZegoEndCall();
+    forceConfirmButtonColor();
+    
+    // Set up intervals
+    const endCallInterval = setInterval(interceptZegoEndCall, 1000);
+    const colorInterval = setInterval(forceConfirmButtonColor, 500);
+    
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+      clearInterval(endCallInterval);
+      clearInterval(colorInterval);
+    };
+  }, []);
+
+  // Force button color when popup shows
+  React.useEffect(() => {
+    if (showLeaveRoomPopup) {
+      const timer = setTimeout(() => {
+        if (confirmButtonRef.current) {
+          console.log('🔴 Force setting confirm button color via ref');
+          confirmButtonRef.current.style.background = '#962067';
+          confirmButtonRef.current.style.backgroundColor = '#962067';
+          confirmButtonRef.current.style.color = '#ffffff';
+          confirmButtonRef.current.style.border = 'none';
+          confirmButtonRef.current.style.outline = 'none';
+        }
+        
+        // Also try via querySelector as backup
+        const confirmButton = document.querySelector('.kauvery-confirm-button');
+        if (confirmButton) {
+          console.log('🔴 Force setting confirm button color via querySelector');
+          confirmButton.style.background = '#962067';
+          confirmButton.style.backgroundColor = '#962067';
+          confirmButton.style.color = '#ffffff';
+          confirmButton.style.border = 'none';
+          confirmButton.style.outline = 'none';
+        }
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showLeaveRoomPopup]);
 
   const zegoContainerRef = useRef(null);
   const zegoInstanceRef = useRef(null);
+  const confirmButtonRef = useRef(null);
 
   // Color scheme
   const colors = {
@@ -305,6 +547,142 @@ const VideoConsultation = () => {
     md: '0 1px 2px 0 rgba(88, 89, 91, 0.3), 0 2px 6px 2px rgba(88, 89, 91, 0.15)',
     lg: '0 2px 4px 0 rgba(88, 89, 91, 0.3), 0 8px 12px 6px rgba(88, 89, 91, 0.15)'
   };
+
+  // Health Package Data
+  const healthPackages = [
+    {
+      id: 1,
+      title: "Home Health Check Package Essential",
+      icon: "👤",
+      expanded: false,
+      services: [
+        "CBC (Complete Blood Count)",
+        "Blood Glucose Random (RBS)",
+        "HBA1C",
+        "Renal Function Test",
+        "Teleconsult with Physician"
+      ]
+    },
+    {
+      id: 2,
+      title: "Home Health Check Package Standard",
+      icon: "💻",
+      expanded: false,
+      services: [
+        "Complete Blood Count",
+        "Blood Glucose Fasting & PP",
+        "Lipid Profile",
+        "Liver Function Test",
+        "Kidney Function Test",
+        "ECG",
+        "Teleconsult with Physician"
+      ]
+    },
+    {
+      id: 3,
+      title: "Home Health Check Package Comprehensive",
+      icon: "💻",
+      expanded: false,
+      services: [
+        "Complete Blood Count",
+        "Blood Glucose Fasting & PP",
+        "Lipid Profile",
+        "Liver Function Test",
+        "Kidney Function Test",
+        "Thyroid Function Test",
+        "ECG",
+        "Chest X-Ray",
+        "Ultrasound Abdomen",
+        "Teleconsult with Physician"
+      ]
+    },
+    {
+      id: 4,
+      title: "Life style health Check Essential",
+      icon: "👤",
+      expanded: false,
+      services: [
+        "BMI Calculation",
+        "Blood Pressure Monitoring",
+        "Blood Glucose Test",
+        "Cholesterol Screening",
+        "Lifestyle Counseling"
+      ]
+    },
+    {
+      id: 5,
+      title: "Life style health Check Standard",
+      icon: "👤",
+      expanded: false,
+      services: [
+        "BMI Calculation",
+        "Blood Pressure Monitoring",
+        "Blood Glucose Test",
+        "Cholesterol Screening",
+        "ECG",
+        "Lifestyle Counseling",
+        "Nutrition Consultation"
+      ]
+    },
+    {
+      id: 6,
+      title: "Life style health Check Comprehensive",
+      icon: "👤",
+      expanded: false,
+      services: [
+        "BMI Calculation",
+        "Blood Pressure Monitoring",
+        "Blood Glucose Test",
+        "Cholesterol Screening",
+        "ECG",
+        "Chest X-Ray",
+        "Lifestyle Counseling",
+        "Nutrition Consultation",
+        "Fitness Assessment"
+      ]
+    },
+    {
+      id: 7,
+      title: "Executive Health Check - Male",
+      icon: "👨‍⚕️",
+      expanded: false,
+      services: [
+        "Complete Blood Count",
+        "Blood Glucose Fasting & PP",
+        "Lipid Profile",
+        "Liver Function Test",
+        "Kidney Function Test",
+        "Thyroid Function Test",
+        "PSA Test",
+        "ECG",
+        "Chest X-Ray",
+        "Ultrasound Abdomen",
+        "Stress Test",
+        "Consultation with Specialist"
+      ]
+    },
+    {
+      id: 8,
+      title: "Executive Health Check - Female",
+      icon: "👩‍⚕️",
+      expanded: false,
+      services: [
+        "Complete Blood Count",
+        "Blood Glucose Fasting & PP",
+        "Lipid Profile",
+        "Liver Function Test",
+        "Kidney Function Test",
+        "Thyroid Function Test",
+        "Pap Smear",
+        "Mammography",
+        "ECG",
+        "Chest X-Ray",
+        "Ultrasound Abdomen",
+        "Stress Test",
+        "Consultation with Specialist"
+      ]
+    }
+  ];
 
   // Pure React approach - no DOM manipulation
   useEffect(() => {
@@ -600,16 +978,39 @@ const VideoConsultation = () => {
   };
 
   const handleEndCall = () => {
-    console.log('🔴 Manual call end triggered');
+    console.log('🔴 End call triggered - showing leave room popup');
+    setShowLeaveRoomPopup(true);
+  };
+
+  const handleConfirmLeaveRoom = () => {
+    console.log('🔴 Confirming leave room');
+    console.log('🔴 Setting showLeaveRoomPopup to false');
+    setShowLeaveRoomPopup(false);
+    
+    // Add a small delay to ensure state updates properly
+    setTimeout(() => {
+      console.log('🔴 Setting showHealthPackages to true');
+      setShowHealthPackages(true);
+      console.log('🔴 Health packages should now be visible');
+    }, 100);
+    
     if (zegoInstanceRef.current) {
       try {
+        console.log('🔴 Leaving Zego room');
         zegoInstanceRef.current.leaveRoom();
       } catch (error) {
         console.warn('Error leaving room:', error);
       }
     }
+    console.log('🔴 Setting callEnded to true');
     setCallEnded(true);
+    console.log('🔴 Setting zegoInitialized to false');
     setZegoInitialized(false);
+  };
+
+  const handleCancelLeaveRoom = () => {
+    console.log('🔴 Canceling leave room');
+    setShowLeaveRoomPopup(false);
   };
 
   const checkDevices = async () => {
@@ -2000,22 +2401,47 @@ const VideoConsultation = () => {
                 });
 
                 // Check for end call buttons and redirect them to our handler
-                const endCallButtons = node.querySelectorAll ? node.querySelectorAll('button, [class*="button"], [class*="btn"]') : [];
+                const endCallButtons = node.querySelectorAll ? node.querySelectorAll('button, [class*="button"], [class*="btn"], [class*="end"], [class*="End"], [class*="leave"], [class*="Leave"], [class*="quit"], [class*="Quit"]') : [];
                 endCallButtons.forEach(button => {
                   if (button.textContent && (
                     button.textContent.toLowerCase().includes('end call') ||
                     button.textContent.toLowerCase().includes('leave') ||
                     button.textContent.toLowerCase().includes('quit') ||
-                    button.textContent.toLowerCase().includes('hang up')
+                    button.textContent.toLowerCase().includes('hang up') ||
+                    button.textContent.toLowerCase().includes('end') ||
+                    button.textContent.toLowerCase().includes('exit')
                   )) {
                     console.log('🔴 Found end call button, redirecting to our handler:', button.textContent);
                     button.onclick = (e) => {
                       e.preventDefault();
                       e.stopPropagation();
+                      e.stopImmediatePropagation();
                       handleEndCall();
+                      return false;
                     };
+                    button.addEventListener('click', (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      e.stopImmediatePropagation();
+                      handleEndCall();
+                      return false;
+                    }, true);
                   }
                 });
+
+                // Hide any Zego popups that appear
+                if (node.className && (
+                  node.className.toLowerCase().includes('popup') ||
+                  node.className.toLowerCase().includes('modal') ||
+                  node.className.toLowerCase().includes('dialog') ||
+                  node.className.toLowerCase().includes('overlay')
+                )) {
+                  console.log('🚫 Found Zego popup/modal, hiding it:', node.className);
+                  node.style.display = 'none';
+                  node.style.visibility = 'hidden';
+                  node.style.opacity = '0';
+                  node.style.pointerEvents = 'none';
+                }
 
                 // Check for text that indicates call ended
                 if (node.textContent && (
@@ -2068,12 +2494,25 @@ const VideoConsultation = () => {
       // Periodically check and update title color
       setInterval(forceUpdateTitleColor, 1000);
       
-      // Periodically check for and hide Zego quit elements
+      // Periodically check for and hide Zego quit elements and popups
       setInterval(() => {
+        // Hide quit elements
         const quitElements = document.querySelectorAll('[class*="quit"], [class*="Quit"], [class*="end"], [class*="End"], [class*="leave"], [class*="Leave"]');
         quitElements.forEach(element => {
           if (element.style.display !== 'none') {
             console.log('🚫 Hiding Zego quit element:', element.className);
+            element.style.display = 'none';
+            element.style.visibility = 'hidden';
+            element.style.opacity = '0';
+            element.style.pointerEvents = 'none';
+          }
+        });
+
+        // Hide any Zego popups or modals
+        const popupElements = document.querySelectorAll('[class*="popup"], [class*="modal"], [class*="dialog"], [class*="overlay"], [class*="Popup"], [class*="Modal"], [class*="Dialog"], [class*="Overlay"]');
+        popupElements.forEach(element => {
+          if (element.style.display !== 'none' && !element.classList.contains('kauvery-confirm-button')) {
+            console.log('🚫 Hiding Zego popup/modal:', element.className);
             element.style.display = 'none';
             element.style.visibility = 'hidden';
             element.style.opacity = '0';
@@ -2668,6 +3107,245 @@ const VideoConsultation = () => {
     );
   };
 
+  // Health Packages Page Component
+  const HealthPackagesPage = () => {
+    const [packages, setPackages] = useState(healthPackages);
+
+    const togglePackage = (packageId) => {
+      setPackages(prevPackages => 
+        prevPackages.map(pkg => 
+          pkg.id === packageId 
+            ? { ...pkg, expanded: !pkg.expanded }
+            : pkg
+        )
+      );
+    };
+
+    return (
+      <div style={{
+        ...styles.body,
+        padding: spacing.xl,
+        background: colors.grey50
+      }}>
+        {/* Header */}
+        <div style={{
+          ...styles.header,
+          boxShadow: '0 8px 25px rgba(150, 32, 103, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15)',
+          filter: 'drop-shadow(0 8px 25px rgba(150, 32, 103, 0.3))'
+        }}>
+          <div style={styles.brandingSection}>
+            <div style={styles.logoContainer}>
+              <div style={styles.yearsBadge}>
+                <img src={logoImage} alt="Kauvery Hospital Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
+              <div style={styles.hospitalInfo}>
+                <h1 style={styles.hospitalName}>Kauvery Hospital</h1>
+                <p style={styles.hospitalSubtitle}>Health Check Packages</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          paddingTop: spacing.xl
+        }}>
+          <h1 style={{
+            color: colors.kauveryPurple,
+            fontSize: '32px',
+            fontWeight: 700,
+            textAlign: 'center',
+            margin: '0 0 40px 0',
+            fontFamily: "'Poppins', sans-serif"
+          }}>
+            Choose Your Health Check Package
+          </h1>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+            gap: spacing.lg,
+            marginBottom: spacing.xl
+          }}>
+            {packages.map((pkg) => (
+              <div key={pkg.id} style={{
+                background: colors.white,
+                borderRadius: radius.lg,
+                border: `2px solid ${pkg.expanded ? colors.kauveryPink : colors.grey200}`,
+                overflow: 'hidden',
+                transition: 'all 0.3s ease',
+                boxShadow: pkg.expanded ? shadows.md : shadows.sm
+              }}>
+                {/* Package Header */}
+                <div 
+                  onClick={() => togglePackage(pkg.id)}
+                  style={{
+                    padding: spacing.lg,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: pkg.expanded ? colors.grey50 : colors.white,
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing.md
+                  }}>
+                    <span style={{
+                      fontSize: '24px',
+                      width: '40px',
+                      textAlign: 'center'
+                    }}>
+                      {pkg.icon}
+                    </span>
+                    <h3 style={{
+                      color: colors.kauveryPurple,
+                      fontSize: '18px',
+                      fontWeight: 600,
+                      margin: 0,
+                      fontFamily: "'Poppins', sans-serif"
+                    }}>
+                      {pkg.title}
+                    </h3>
+                  </div>
+                  <span style={{
+                    fontSize: '20px',
+                    color: colors.kauveryPurple,
+                    transition: 'transform 0.3s ease',
+                    transform: pkg.expanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                  }}>
+                    ▼
+                  </span>
+                </div>
+
+                {/* Package Details */}
+                {pkg.expanded && (
+                  <div style={{
+                    padding: `0 ${spacing.lg} ${spacing.lg} ${spacing.lg}`,
+                    borderTop: `1px solid ${colors.grey200}`,
+                    background: colors.grey50
+                  }}>
+                    <h4 style={{
+                      color: colors.kauveryPurple,
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      margin: '0 0 12px 0'
+                    }}>
+                      Included Services:
+                    </h4>
+                    <ul style={{
+                      margin: 0,
+                      paddingLeft: spacing.lg,
+                      color: colors.kauveryDarkGrey,
+                      fontSize: '14px',
+                      lineHeight: 1.8
+                    }}>
+                      {pkg.services.map((service, index) => (
+                        <li key={index} style={{
+                          marginBottom: spacing.xs,
+                          position: 'relative'
+                        }}>
+                          <span style={{
+                            color: colors.kauveryPink,
+                            marginRight: spacing.sm,
+                            fontWeight: 'bold'
+                          }}>
+                            •
+                          </span>
+                          {service}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: 'linear-gradient(135deg, #962067, #A23293)',
+          color: colors.white,
+          padding: '12px 20px',
+          textAlign: 'center',
+          fontSize: '13px',
+          fontFamily: "'Poppins', sans-serif",
+          fontWeight: '500',
+          zIndex: 1000,
+          boxShadow: '0 -2px 8px rgba(150, 32, 103, 0.3)',
+          height: '40px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px'
+        }}>
+          <span>© 2025 Kauvery Hospital. All Rights Reserved.</span>
+          <span>|</span>
+          <a 
+            href="https://www.kauveryhospital.com/disclaimer/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              color: colors.white,
+              textDecoration: 'none',
+              transition: 'color 0.3s ease',
+              fontSize: '13px',
+              fontWeight: '500'
+            }}
+            onMouseEnter={(e) => e.target.style.color = '#f0f0f0'}
+            onMouseLeave={(e) => e.target.style.color = colors.white}
+          >
+            Disclaimer
+          </a>
+          <span>|</span>
+          <a 
+            href="https://www.kauveryhospital.com/privacy/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              color: colors.white,
+              textDecoration: 'none',
+              transition: 'color 0.3s ease',
+              fontSize: '13px',
+              fontWeight: '500'
+            }}
+            onMouseEnter={(e) => e.target.style.color = '#f0f0f0'}
+            onMouseLeave={(e) => e.target.style.color = colors.white}
+          >
+            Privacy Policy
+          </a>
+          <span>|</span>
+          <a 
+            href="https://www.kauveryhospital.com/terms-conditions/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              color: colors.white,
+              textDecoration: 'none',
+              transition: 'color 0.3s ease',
+              fontSize: '13px',
+              fontWeight: '500'
+            }}
+            onMouseEnter={(e) => e.target.style.color = '#f0f0f0'}
+            onMouseLeave={(e) => e.target.style.color = colors.white}
+          >
+            T&C
+          </a>
+        </div>
+      </div>
+    );
+  };
+
   // Call Ended Page Component
   const CallEndedPage = () => {
     console.log('🔍 Debug: CallEndedPage component rendered');
@@ -2811,6 +3489,15 @@ const VideoConsultation = () => {
     return <AccessDeniedPage />;
   }
 
+  // Show health packages page if call ended and health packages should be shown
+  if (showHealthPackages) {
+    console.log('🔍 Debug: Rendering HealthPackagesPage');
+    console.log('🔍 Debug: showHealthPackages state:', showHealthPackages);
+    console.log('🔍 Debug: callEnded state:', callEnded);
+    console.log('🔍 Debug: Health packages page should be visible now!');
+    return <HealthPackagesPage />;
+  }
+  
   // Show call ended page if call has been completed
   if (callEnded) {
     console.log('🔍 Debug: Rendering CallEndedPage');
@@ -2903,6 +3590,9 @@ const VideoConsultation = () => {
             zegoInstanceRef.current = null;
             initializeZego().catch(console.error);
           }}
+          showLeaveRoomPopup={showLeaveRoomPopup}
+          onConfirmLeaveRoom={handleConfirmLeaveRoom}
+          onCancelLeaveRoom={handleCancelLeaveRoom}
         />
       </VideoErrorBoundary>
 
@@ -2910,6 +3600,8 @@ const VideoConsultation = () => {
       <div style={styles.notification}>
         <span>{notification.message}</span>
       </div>
+
+
 
       {/* Footer */}
       <div style={{
@@ -3025,6 +3717,8 @@ const VideoConsultation = () => {
           T&C
         </a>
       </div>
+      
+
     </div>
   );
 };

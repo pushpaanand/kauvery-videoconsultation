@@ -38,7 +38,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Configuration
 const config = {
-  decryptionApiUrl: process.env.DECRYPTION_API_URL || 'https://hmsapiktv.kauverykonnect.com/Encryfile/api/values/decrypt',
+  // decryptionApiUrl: process.env.DECRYPTION_API_URL || 'https://hmsapiktv.kauverykonnect.com/Encryfile/api/values/decrypt',
   decryptionKey: process.env.DECRYPTION_KEY || 'sfrwYIgtcgsRdwjo',
   environment: NODE_ENV
 };
@@ -114,17 +114,17 @@ app.use((error, req, res, next) => {
 });
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    environment: config.environment,
-    version: '1.0.0',
-    uptime: process.uptime(),
-    decryptionApiUrl: config.decryptionApiUrl,
-    decryptionKey: config.decryptionKey ? '***' + config.decryptionKey.slice(-4) : 'Not set'
-  });
-});
+// app.get('/api/health', (req, res) => {
+//   res.json({
+//     status: 'OK',
+//     timestamp: new Date().toISOString(),
+//     environment: config.environment,
+//     version: '1.0.0',
+//     uptime: process.uptime(),
+//     decryptionApiUrl: config.decryptionApiUrl,
+//     decryptionKey: config.decryptionKey ? '***' + config.decryptionKey.slice(-4) : 'Not set'
+//   });
+// });
 
 // Main decryption endpoint
 app.post('/api/decrypt', (req, res) => {
@@ -169,45 +169,17 @@ app.post('/api/decrypt', (req, res) => {
   }
 });
 
-// Test decryption endpoint (development only)
-if (NODE_ENV === 'development') {
-  app.post('/api/test-decrypt', (req, res) => {
-    try {
-      const testEncodedText = 'ODFlvLi0k4Ahvs6YIHnKCbJ//F1frN/vbVq+1c55QOZ1oa3keYEEZjCHHyvID7X5jfNNotg52mwz1TKIzOGJRw==';
-      const decryptedResult = decrypt(config.decryptionKey, testEncodedText);
-      
-      console.log('✅ Test decryption successful');
-      
-      res.json({ 
-        success: true, 
-        testEncodedText, 
-        decryptedResult,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('❌ Test decryption failed:', error.message);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Test decryption failed', 
-        details: error.message,
-        timestamp: new Date().toISOString()
-      });
-    }
-  });
-}
-
-app.use(express.static(path.join(__dirname, "./client/build")));
-
+app.use(express.static("./client/build"));
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "client","build", "index.html"));
+  res.sendFile(path.resolve(__dirname, "client","build", "index.html"));
 });
-// Request logging middleware
-app.use((req, res, next) => {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
-  next();
-});
+// // Request logging middleware
+// app.use((req, res, next) => {
+//   const timestamp = new Date().toISOString();
+//   console.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
+//   next();
+// });
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
